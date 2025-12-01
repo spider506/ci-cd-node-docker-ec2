@@ -1,0 +1,8 @@
+{
+  "name": "ci-cd-node-docker-ec2",
+  "version": "1.0.0",
+  "description": "Sample Node.js app with CI/CD pipeline",
+  "main": "src/app.js",
+  "scripts": { "start": "node src/app.js", "test": "echo \"No tests yet\" && exit 0" },
+  "dependencies": { "express": "^4.19.2" }
+}
