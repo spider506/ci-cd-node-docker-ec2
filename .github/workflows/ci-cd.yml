@@ -1,4 +1,4 @@
-name: CI - Build and Push Docker Image
+name: CI - Build, Push Docker Image and Deploy to EC2
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -38,3 +38,17 @@ jobs:
       - name: Push Docker image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/ci-cd-node-docker-ec2:latest
+
+      - name: Deploy to EC2 via SSH
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > ec2-key.pem
+          chmod 600 ec2-key.pem
+
+          ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST << 'EOF'
+            sudo docker pull ferozali/ci-cd-node-docker-ec2:latest
+            sudo docker rm -f node_app || true
+            sudo docker run -d -p 3000:3000 --name node_app ferozali/ci-cd-node-docker-ec2:latest
+          EOF
